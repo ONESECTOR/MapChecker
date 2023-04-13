@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "MapChecker"
-include ':app'
+include(":app")

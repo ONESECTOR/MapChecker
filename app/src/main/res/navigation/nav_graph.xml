@@ -7,12 +7,12 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.sector.mapchecker.MainFragment"
+        android:name="com.sector.mapchecker.ui.main.MainFragment"
         android:label="fragment_first"
         tools:layout="@layout/fragment_main" />
     <fragment
         android:id="@+id/SecondFragment"
-        android:name="com.sector.mapchecker.MapFragment"
+        android:name="com.sector.mapchecker.ui.map.MapFragment"
         android:label="fragment_map"
         tools:layout="@layout/fragment_map">
 
