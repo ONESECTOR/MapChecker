@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.sector.mapchecker.databinding.FragmentMainBinding
+import com.sector.mapchecker.extension.navigate
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -30,7 +31,9 @@ class MainFragment : Fragment() {
 
         binding.apply {
             btnOpenMap.setOnClickListener {
-
+                navigate(
+                    MainFragmentDirections.onMap()
+                )
             }
         }
     }

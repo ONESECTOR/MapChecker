@@ -9,15 +9,14 @@
         android:id="@+id/FirstFragment"
         android:name="com.sector.mapchecker.ui.main.MainFragment"
         android:label="fragment_first"
-        tools:layout="@layout/fragment_main" />
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/onMap"
+            app:destination="@id/SecondFragment" />
+    </fragment>
     <fragment
         android:id="@+id/SecondFragment"
         android:name="com.sector.mapchecker.ui.map.MapFragment"
         android:label="fragment_map"
-        tools:layout="@layout/fragment_map">
-
-        <action
-            android:id="@+id/onMap"
-            app:destination="@id/FirstFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_map"/>
 </navigation>
