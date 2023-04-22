@@ -2,8 +2,6 @@ package com.sector.mapchecker.ui.map
 
 import android.Manifest
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.PointF
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -14,19 +12,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
-import com.sector.mapchecker.R
 import com.sector.mapchecker.databinding.FragmentMapBinding
+import com.sector.mapchecker.databinding.IcPinLayoutBinding
+import com.sector.mapchecker.extension.addMarks
 import com.sector.mapchecker.extension.zoomIn
 import com.sector.mapchecker.extension.zoomOut
+import com.sector.mapchecker.model.Mark
+import com.sector.mapchecker.ui.dialogs.MarkDialog
 import com.yandex.mapkit.MapKit
 import com.yandex.mapkit.MapKitFactory
-import com.yandex.mapkit.layers.ObjectEvent
-import com.yandex.mapkit.map.IconStyle
-import com.yandex.mapkit.map.RotationType
-import com.yandex.mapkit.user_location.UserLocationLayer
-import com.yandex.mapkit.user_location.UserLocationObjectListener
-import com.yandex.mapkit.user_location.UserLocationView
-import com.yandex.runtime.image.ImageProvider
+import com.yandex.mapkit.map.MapObjectTapListener
+import com.yandex.runtime.ui_view.ViewProvider
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -42,52 +38,27 @@ class MapFragment : Fragment() {
         ::onGotLocationPermissionResult
     )
 
+    private val dialog by lazy {
+        MarkDialog()
+    }
+
     private var mapKitObj: MapKit? = null
 
-    private var userLocationLayer: UserLocationLayer? = null
-
-    private var userLocationObjectListener = object : UserLocationObjectListener {
-
-        override fun onObjectAdded(userLocationView: UserLocationView) {
-            userLocationLayer?.setAnchor(
-                PointF((binding.mapView.width * 0.5).toFloat(), (binding.mapView.height * 0.5).toFloat()),
-                PointF((binding.mapView.width * 0.5).toFloat(), (binding.mapView.height * 0.83).toFloat())
-            )
-            userLocationView.arrow.setIcon(
-                ImageProvider.fromResource(
-                    requireContext(),
-                    R.drawable.ic_my_location
-                )
-            )
-            val pinIcon = userLocationView.pin.useCompositeIcon()
-            pinIcon.setIcon(
-                "icon",
-                ImageProvider.fromResource(requireContext(), R.drawable.ic_plus),
-                IconStyle()
-                    .setAnchor(PointF(0F, 0F))
-                    .setZIndex(0F)
-                    .setScale(1F)
-            )
-            pinIcon.setIcon(
-                "pin",
-                ImageProvider.fromResource(requireContext(), R.drawable.ic_minus),
-                IconStyle()
-                    .setAnchor(PointF(0.5F, 0.5F))
-                    .setRotationType(RotationType.ROTATE)
-                    .setZIndex(0F)
-                    .setScale(1F)
-            )
-            userLocationView.accuracyCircle.fillColor = Color.BLUE
-        }
-
-        override fun onObjectRemoved(p0: UserLocationView) {
-
-        }
-
-        override fun onObjectUpdated(p0: UserLocationView, p1: ObjectEvent) {
-
-        }
-    }
+    private val markCoordinates = listOf(
+        Mark(
+            latitude = BAKHMUT_LATITUDE,
+            longitude = BAKHMUT_LATITUDE
+        ),
+        // Рандомные координаты придумал
+        Mark(
+            latitude = 12.3,
+            longitude = 14.5
+        ),
+        Mark(
+            latitude = 22.1,
+            longitude = 34.8
+        )
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +75,8 @@ class MapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        addMarksToMap()
 
         binding.apply {
             btnZoomIn.setOnClickListener {
@@ -164,14 +137,28 @@ class MapFragment : Fragment() {
     }
 
     private fun onPermissionGranted() {
-        setCameraToUser()
+        // Нужно показывать пользовательскую метку и делать фокус на него, но мне лень)
     }
 
-    private fun setCameraToUser() {
-        mapKitObj?.resetLocationManagerToDefault()
-        userLocationLayer = mapKitObj?.createUserLocationLayer(binding.mapView.mapWindow)
-        userLocationLayer?.isVisible = true
-        userLocationLayer?.isHeadingEnabled = true
-        userLocationLayer?.setObjectListener(userLocationObjectListener)
+    private fun addMarksToMap() {
+        val markView = ViewProvider(getMarkView())
+
+        binding.mapView.addMarks(
+            markCoordinates = markCoordinates,
+            markView = markView,
+            clickListener = markClickListener
+        )
+    }
+
+    private fun getMarkView() = IcPinLayoutBinding.inflate(layoutInflater).root
+
+    private val markClickListener = MapObjectTapListener { mapObject, point ->
+        dialog.show(childFragmentManager, MarkDialog.TAG)
+        true
+    }
+
+    companion object {
+        private const val BAKHMUT_LATITUDE = 48.59441
+        private const val BAKHMUT_LONGITUDE = 37.99983
     }
 }
